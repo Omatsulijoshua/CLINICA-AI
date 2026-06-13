@@ -1,4 +1,4 @@
-Medica AI – Intelligent Medical Assistant for Education, Insights, and Healthcare Guidance
+# Medica AI – Intelligent Medical Assistant for Education, Insights, and Healthcare Guidance
 
 Medica AI is an advanced conversational health intelligence system designed to support users in understanding laboratory results, medical conditions, medications, nutrition, and preventive healthcare through an interactive and context-aware experience. Built with a focus on accessibility and clarity, the system bridges the gap between complex medical information and everyday understanding by translating trusted medical knowledge into simple, practical explanations.
 
