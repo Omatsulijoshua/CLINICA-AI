@@ -15,3 +15,19 @@ A key feature of Medica AI is its conversational memory, which allows it to main
 Disclaimer: Medica AI is not a medical professional and does not provide diagnosis or treatment. It is strictly an educational and informational tool. Users are strongly encouraged to seek guidance from licensed healthcare providers for any medical concerns, diagnosis, or treatment decisions.
 
 Medica AI is built to empower better health awareness through intelligent conversation, structured learning, and responsible medical information delivery.
+
+
+# Clinica AI – Implementation Plan
+This implementation plan outlines the architecture, database schema, multi-agent coordination system, frontend layout, and verification process to build a production-ready, HIPAA-compliant SaaS platform for evidence-based medical AI assistance.
+
+Project Architecture
+We will implement a distributed architecture using Docker Compose, orchestrating the following services:
+
+Frontend: Next.js 15+ (App Router, TypeScript, Tailwind CSS, ShadCN)
+Backend: ASP.NET Core 9 Web API
+Database: PostgreSQL (for persistent relational data and audit logs)
+Caching & Rate Limiting: Redis
+Vector Search (Knowledge Base): Qdrant
+Local Object Storage: MinIO (acting as cloud storage compat for dev, transitionable to AWS S3 / Azure Blob)
+
+
