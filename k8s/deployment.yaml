@@ -1,0 +1,199 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clinica-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clinica-db
+  template:
+    metadata:
+      labels:
+        app: clinica-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          env:
+            - name: POSTGRES_DB
+              value: clinica_db
+            - name: POSTGRES_USER
+              value: clinica_user
+            - name: POSTGRES_PASSWORD
+              value: SecurePassword123!
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+spec:
+  ports:
+    - port: 5432
+  selector:
+    app: clinica-db
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clinica-cache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clinica-cache
+  template:
+    metadata:
+      labels:
+        app: clinica-cache
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cache
+spec:
+  ports:
+    - port: 6379
+  selector:
+    app: clinica-cache
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clinica-qdrant
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clinica-qdrant
+  template:
+    metadata:
+      labels:
+        app: clinica-qdrant
+    spec:
+      containers:
+        - name: qdrant
+          image: qdrant/qdrant:latest
+          ports:
+            - containerPort: 6333
+            - containerPort: 6334
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: qdrant
+spec:
+  ports:
+    - name: http
+      port: 6333
+    - name: grpc
+      port: 6334
+  selector:
+    app: clinica-qdrant
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clinica-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: clinica-backend
+  template:
+    metadata:
+      labels:
+        app: clinica-backend
+    spec:
+      containers:
+        - name: backend
+          image: clinica-backend:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ConnectionStrings__DefaultConnection
+              value: Host=db;Database=clinica_db;Username=clinica_user;Password=SecurePassword123!
+            - name: Redis__ConnectionString
+              value: cache:6379
+            - name: Qdrant__Host
+              value: qdrant
+            - name: Qdrant__Port
+              value: "6334"
+            - name: Jwt__Key
+              value: SuperSecretClinicaAIKey1234567890EncryptionKey!
+            - name: Jwt__Issuer
+              value: ClinicaAI
+            - name: Jwt__Audience
+              value: ClinicaAIClients
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  ports:
+    - port: 5000
+      targetPort: 8080
+  selector:
+    app: clinica-backend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clinica-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: clinica-frontend
+  template:
+    metadata:
+      labels:
+        app: clinica-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: clinica-frontend:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NEXT_PUBLIC_API_URL
+              value: http://backend:5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 3000
+  selector:
+    app: clinica-frontend

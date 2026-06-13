@@ -1,0 +1,21 @@
+# Dotnet Build Artifacts
+bin/
+obj/
+*.user
+*.suo
+.vs/
+App_Data/Uploads/
+
+# Next.js Build Artifacts
+node_modules/
+.next/
+out/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Operating System Logs
+.DS_Store
+Thumbs.db
